@@ -1,0 +1,61 @@
+#!/usr/bin/env python
+import argparse
+import os
+
+from stockfighter import config
+import levels
+
+class Command(object):
+    def __init__(self, args):
+        self.args = args
+        
+class AuthorizeCommand(Command):
+    def create_parser(parent):
+        return parent.add_parser('authorize', help='Store authorization keys.')
+    
+    def __call__(self):
+        config.set_stockfighter_api_key()
+
+class LevelsCommand(Command):
+    def create_parser(parent):
+        return parent.add_parser('list', help='List levels.')
+    
+    def __call__(self):
+        for level_name in levels.__all__:
+            try:
+                instance_id = config.get_instance_id(level_name)
+                print("{} - {}".format(level_name, instance_id))
+            except KeyError:
+                print(level_name)
+                
+class SolveCommand(Command):
+    def create_parser(parent):
+        parser = parent.add_parser('solve', help='Solve the level.')
+        parser.add_argument('level', choices=levels.__all__)
+        return parser
+    
+    def __call__(self):
+        print(self.args.level)
+        
+def build_parser():
+    parser = argparse.ArgumentParser(description='Play Stockfighter.io!')
+    subparser = parser.add_subparsers(title='Commands')
+     
+    for cmd in [AuthorizeCommand, LevelsCommand, SolveCommand]:
+        cmd_parser = cmd.create_parser(subparser)
+        cmd_parser.set_defaults(command=cmd)
+     
+    return parser
+
+def main():
+    parser = build_parser()
+    args = parser.parse_args()
+    
+    if 'command' in args:
+        command = args.command(args)
+        command()
+    else:
+        parser.error('Please enter a command!')
+
+if __name__=="__main__":
+    main()

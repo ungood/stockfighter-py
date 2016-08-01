@@ -1,6 +1,9 @@
 #from stockfighter import Stockfighter
 import os, time
 
+def create_parser(parent):
+    pass
+
 # sf = Stockfighter()
 #
 # level = sf.levels['chock_a_block']

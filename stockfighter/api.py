@@ -2,6 +2,11 @@ import json
 import requests
 from urllib.parse import urljoin
 
+class StarfighterException(Exception):
+    def __init__(self,message):
+        super().__init__(message)
+
+
 class Resource(object):
     def __init__(self, session, *url_parts):
         self.session = session
@@ -12,7 +17,7 @@ class Resource(object):
         response.raise_for_status()
         json = response.json()
         if json['ok'] is not True:
-            raise Exception(json)
+            raise StarfighterException(json)
         return json
             
     def get(self):
@@ -82,6 +87,12 @@ class Instance(object):
         
     def resume(self):
         return self.resource.descend('resume').post()
+        
+    def get_or_restart(self):
+        try:
+            self.get()
+        except StarfighterException:
+            return self.restart()
 
 
 class Stockfighter(object):

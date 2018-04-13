@@ -4,7 +4,7 @@ import time
 logger = logging.getLogger(__name__)
 
 GOAL=100
-LIMIT=25
+LIMIT=100
 
 def solve(client, level_info):
     account = level_info['account']
@@ -19,23 +19,23 @@ def solve(client, level_info):
     
     logger.info("Done!")
 
-def get_price(stock):
-    price = 0
-    while price < 1:
+def get_next_trade(stock):
+    while True:
         time.sleep(1)
         try:
             logger.debug("Polling for quote.")
-            price = stock.quote()['last']
-            logger.debug("Found price %f.", price)
+            price = stock.quote()['ask']
+            qty = stock.quote()['askSize']
+            logger.debug("Found %d shares at price %f.", qty, price)
+            return price, qty
         except KeyError:
             continue
-    return price
 #
 def fill_orders(account, stock, goal, limit):
     while goal > 0:
-        price = get_price(stock)
+        price, qty = get_next_trade(stock)
 
-        qty = min(goal, limit)
+        qty = min(qty, goal, limit)
         logger.info("Buying {} shares of {} for {}.".format(qty, stock, price))
         filled = stock.buy(account, price, qty, order_type='immediate-or-cancel')['totalFilled']
         logger.info("{} filled.".format(filled))

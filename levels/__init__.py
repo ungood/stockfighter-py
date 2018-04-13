@@ -20,6 +20,7 @@ for name in glob.glob(path.join(basedir, '*.py')):
             levels[level_name] = sys.modules[module_name]
         except:
             logger.exception('Caught exception while loading the %r plug-in.', module_name)
+            raise
 
 __all__.sort()
 
